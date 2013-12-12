@@ -1,54 +1,75 @@
-### Initializing Ankor
+### Binding your first Property
 
-Open [`TaskListController.java`](#linkToGithub). This is a controller in the JavaFX sense. A controller is attached to an
-`.fxml` file by specifying it as an attribute in the root node. You can take a look at it in `tasks.fxml>`.
+In this step we are going to bind a JavaFX property to an Ankor property. As far as bindings are concerned, this will
+be about the JavaFX API for the most part. Ankor tries to be as close to the JavaFX API as possible.
 
-Inside `initialize` we have to take care of two things:
+#### Accessing JavaFX components
 
-    @Override
-    public void initialize(URL url, ResourceBundle resourceBundle) {
-        Ref rootRef = refFactory().ref("root");
-        rootRef.fire(new Action("init"));
-    }
+Before we can bind Ankor properties to UI components we need to access them in our controller.
+In order to do so we need to specify the type of our component (`Node` being the most general one) and name
+it exactly like its id attribute in the [`tasks.fxml`][2]. Adding the `@FXML` annotation makes it explicit that there is
+JavaFX magic happening in the background.
 
-#### References
+In this example we want to hide and show the footer based on the number of uncompleted tasks, as in the reference
+implementation. This means we need to access the footer (which is separated in two parts). Its ids are `footerTop` and `footerBottom`,
+so we'll need those two fields in our controller:
 
-At the core of the Ankor model is the [`Ref`](#linkToDoc). It is a reference to a property of the view model.
-In this case it's a remote reference, as the view model resides on the server. All view model properties are ordered
-in a hierarchical tree structure. The Ref object allows you to navigate this tree and manipulate the underlying properties.
-By requesting the reference that lies at the `"root"` of the tree we get access to the complete view model. Except for
-the root the tree is still empty though. That's why we need...
+    @FXML
+    public Node footerTop;
+    @FXML
+    public Node footerBottom;
 
-#### Actions
+#### Navigating Ankor with Refs
 
-Another core concept of Ankor are Actions. An [`Action`](#linkToDoc) is generally used to make user interaction explicit. In this case
-however we use it to tell the Ankor server to set up a new view model for us (you can think of it as
-making the interaction that started the application explicit). An Action always gets invoked on a Ref, in this case it's
-the root reference.
-The server will process the action and return a response containing the initial state of the application.
-The data is JSON encoded and will look like this:
+Now that we have received the view model from the server we can bind UI properties. But right now we only got
+a Ankor `Ref`, which obviously can't be bound to any JavaFX properties.
 
-    {
-        "senderId": "ankor-servlet-server",
-        "modelId": "fe03c887-e024-4e51-8af0-dc3d4d4de340",
-        "messageId": "ankor-servlet-server#1",
-        "property": "root",
-        "change": {
-            "type": "value",
-            "value": {
-                "model": {
-                    "tasks": [],
-                    "filter": "all",
-                    "itemsLeft": 0,
-                    ...
-                }
-            }
+Now as you might have noticed earlier, our todo application's view model on the server is structured like this:
+
+    "root": {
+        "model": {
+            "tasks": [],
+            "filter": "all",
+            "itemsLeft": 0,
+            ...
         }
     }
 
-"model" denotes the name of the property that has changed here. Its children are the names and values of the properties
-that have changed, like an (empty) array of tasks, the number of items in the list, and so on.
-It also has a type which is used to represent different kinds of changes like inserts or deletes.
+We only have a `Ref` to the `root` property right now, but we want access to the `model` and its various key-value pairs, which hold
+the actual state of our application.
+To navigate the tree we can "append" a path to a `Ref`, yielding a new `Ref` to the specified property.
 
-When the message arrives, the client-side Ankor system will pick up the new values and update
-its property tree. However there will be no visible change in the UI, since we haven't set up and bindings yet.
+So in order to access the `model` part of the view model we call inside our `myInit` method:
+
+    FxRef rootRef = refFactory().ref("root");
+    FxRef modelRef = rootRef.appendPath("model");
+
+Now that we got used to it, we do it once more:
+
+    FxRef footerVisibilityRef = modelRef.appendPath("footerVisibility");
+
+<div class="alert alert-info">
+  <strong>Note:</strong> We are using type FxRef instead of Ref here.
+</div>
+
+#### Binding Ankor properties to JavaFX properties
+
+Now that we have a `Ref` to the footer-visibility-property and a Java references to the FX components we can finally
+do the binding.
+
+Ankor provides a subtype of `Ref` called [`FxRef`][3], which has a method `fxProperty()`.
+As the name suggests it returns a property object. It can be used like any other JavaFX property, especially for bindings.
+
+    Property<Boolean> footerVisibilityProperty = footerVisibilityRef.fxProperty();
+    footerTop.visibleProperty().bind(footerVisibilityProperty);
+    footerBottom.visibleProperty().bind(footerVisibilityProperty);
+
+In the case of our `footerVisibilityRef` we are expecting a `Property` of type `Boolean`.
+We then use this property and bind it to the visibilityProperty of the footer nodes.
+
+We just learned how bindings work in JavaFX as well as in conjunction with Ankor. Unfortunately we still won't be able to see anything,
+since the footer visibility won't change until we add a todo to the list.
+
+[1]: https://github.com/ankor-io/ankor-todo/blob/fx-step-3/todo-javafx-client/src/main/java/io/ankor/tutorial/TaskListController.java
+[2]: https://github.com/ankor-io/ankor-todo/blob/fx-step-3/todo-javafx-client/src/main/resources/tasks.fxml
+[3]: #
