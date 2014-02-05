@@ -11,14 +11,19 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.util.converter.NumberStringConverter;
 
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import static at.irian.ankor.fx.websocket.AnkorApplication.refFactory;
 
 public class TaskListController implements Initializable {
+
+    private FxRef modelRef;
 
     @FXML
     public Node footerTop;
@@ -30,6 +35,9 @@ public class TaskListController implements Initializable {
     @FXML
     public Label todoCountText;
 
+    @FXML
+    public TextField newTodo;
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         Ref rootRef = refFactory().ref("root");
@@ -40,7 +48,7 @@ public class TaskListController implements Initializable {
     @ChangeListener(pattern = "root")
     public void myInit() {
         FxRef rootRef = refFactory().ref("root");
-        FxRef modelRef = rootRef.appendPath("model");
+        modelRef = rootRef.appendPath("model");
         FxRef footerVisibilityRef = modelRef.appendPath("footerVisibility");
 
         Property<Boolean> footerVisibilityProperty = footerVisibilityRef.fxProperty();
@@ -56,7 +64,13 @@ public class TaskListController implements Initializable {
 
     @FXML
     public void newTodo(ActionEvent actionEvent) {
-        // TODO
+        String title = newTodo.getText();
+        if (!title.equals("")) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("title", title);
+            modelRef.fire(new Action("newTask", params));
+            newTodo.clear();
+        }
     }
 
     @FXML
