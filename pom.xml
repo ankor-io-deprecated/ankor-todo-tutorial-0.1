@@ -10,7 +10,7 @@
     <name>Todo Sample - Project</name>
 
     <modules>
-        <module>todo-javafx-client</module>
+        <module>todo-fx</module>
         <module>todo-server</module>
     </modules>
 
