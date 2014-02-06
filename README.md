@@ -1,31 +1,20 @@
-### JavaFX Client
+### Ankor Server
 
-In this tutorial we'll be building a simple Ankor application.
-We'll explain how to setup Ankor, write the first
-view model and bind the model to your UI components. While Ankor is generally independent of the transport layer,
-in this tutorial we'll be using WebSockets. They are supported by both web browsers and Java and
-Ankor comes with some utility classes that make using them easy.
+In this tutorial we'll be building an Ankor server that will receive messages from one of our
+todo client apps, update its view model state and push those changes back to the client.
 
-#### The Application
-
-This his how the app will look like when we are done:
-
-![fx-step-0-1](/static/images/tutorial/fx-step-0-1.png)
-
-This might look familiar to you (it's the todo app form [TodoMVC](http://todomvc.com/)).
-However this one is fully written and styled using JavaFX.
+The server can run within any web container that implements [JSR 356][1], the Java API for WebSockets.
+In this tutorial we'll be using an embedded [GlassFish 4][2] server, so you don't need to worry about it.
 
 #### Before you start
 
-Please make sure that all software components are installed properly. Especially check the JavaFX section to make sure
-that JavaFX is on the classpath.
+Please make sure that all software components are installed properly.
 
 <div class="tabbable ">
     <ul class="nav nav-tabs">
         <li class="active"><a href="#tab1" data-toggle="tab">Java</a></li>
         <li><a href="#tab2" data-toggle="tab">Maven</a></li>
-        <li><a href="#tab3" data-toggle="tab">Java FX</a></li>
-        <li><a href="#tab4" data-toggle="tab">Git</a></li>
+        <li><a href="#tab3" data-toggle="tab">Git</a></li>
     </ul>
     <div class="tab-content">
         <div class="tab-pane active" id="tab1">
@@ -49,12 +38,6 @@ that JavaFX is on the classpath.
             <pre><code>mvn -version</code></pre>
         </div>
         <div class="tab-pane" id="tab3">
-            <p>To get JavaFX on the Classpath execute</p>
-            <pre><code>mvn com.zenjava:javafx-maven-plugin:2.0:fix-classpath</code></pre>
-            <p>On unix systems you may need <code>sudo mvn ...</code></p>
-            <p>If you are interested in why this is needed read <a href="http://zenjava.com/javafx/maven/fix-classpath.html">"Getting JavaFX on the Classpath"</a></p>
-        </div>
-        <div class="tab-pane" id="tab4">
             <p>Install Git, download from <a href="http://git-scm.com/download">the Git site</a>.</p>
         </div>
     </div>
@@ -67,14 +50,18 @@ Clone the git repository from:
     :::bash
     git clone https://github.com/ankor-io/ankor-todo.git
 
-The folder ankor-todo is empty. To get the first tutorial step, checkout branch `fx-step-0`.
+The folder ankor-todo is empty. To get the first tutorial step, checkout branch `server-step-0`.
 This is how you may switch between tutorial steps later.
 
     :::bash
     cd ankor-todo
-    git checkout -f fx-step-0
+    git checkout -f server-step-0
 
-Now you got a maven project based on two modules:
+Now you got a maven project based on these modules:
 
-    client : Todo Sample - JavaFX Client
-    server : Todo Sample - Server
+    fx      : Todo Sample - JavaFX Client
+    server  : Todo Sample - Server
+    servlet : Todo Sample - Servlet
+
+[1]: http://www.oracle.com/technetwork/articles/java/jsr356-1937161.html
+[2]: https://glassfish.java.net/
