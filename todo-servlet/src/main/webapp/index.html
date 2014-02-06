@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Up and Running!</title>
+</head>
+<body>
+<p>Up and Running!</p>
+<script type="text/javascript">
+    var ws = new WebSocket("ws://localhost:8080/websocket/ankor")
+    ws.onopen = function(msg) {
+        var p = document.createElement('p');
+        p.textContent = 'WebSocket connection established';
+        document.body.appendChild(p);
+    };
+    ws.onmessage = function(e) {
+        var p = document.createElement('p');
+        p.textContent = 'UUID received: ' + e.data;
+        document.body.appendChild(p);
+    };
+</script>
+</body>
+</html>
