@@ -8,7 +8,7 @@
         <version>0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>todo-javafx-client</artifactId>
+    <artifactId>todo-fx</artifactId>
     <packaging>jar</packaging>
     <name>Todo Sample - JavaFX Client</name>
 
