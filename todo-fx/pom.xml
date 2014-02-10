@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>todo-javafx-client</artifactId>
+    <artifactId>todo-fx</artifactId>
     <packaging>jar</packaging>
     <name>Todo Sample - JavaFX Client</name>
 
