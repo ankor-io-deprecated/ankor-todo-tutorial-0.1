@@ -12,10 +12,12 @@ import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
 import javafx.util.converter.NumberStringConverter;
 
 import java.net.URL;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
@@ -37,6 +39,9 @@ public class TaskListController implements Initializable {
 
     @FXML
     public TextField newTodo;
+
+    @FXML
+    public VBox tasksList;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -60,6 +65,21 @@ public class TaskListController implements Initializable {
         todoCountNum.textProperty().bindBidirectional(
                 modelRef.appendPath("itemsLeft").<Number>fxProperty(),
                 new NumberStringConverter());
+
+        renderTasks(modelRef.appendPath("tasks"));
+    }
+
+    @ChangeListener(pattern = "root.model.(tasks)")
+    public void renderTasks(FxRef tasksRef) {
+        tasksList.getChildren().clear();
+
+        int numTasks = tasksRef.<List>getValue().size();
+
+        for (int index = 0; index < numTasks; index++) {
+            FxRef itemRef = tasksRef.appendIndex(index);
+            TaskPane node = new TaskPane(itemRef, index);
+            tasksList.getChildren().add(node);
+        }
     }
 
     @FXML
