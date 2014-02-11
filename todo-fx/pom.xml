@@ -12,11 +12,6 @@
     <packaging>jar</packaging>
     <name>Todo Sample - JavaFX Client</name>
 
-    <properties>
-        <javafx.version>2.2.40</javafx.version>
-        <javafx.runtime.lib.jar>${java.home}/lib/jfxrt.jar</javafx.runtime.lib.jar>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>at.irian.ankor</groupId>
