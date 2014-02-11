@@ -1,51 +1,118 @@
-### Adding Todos to the List
+### Rendering Todos
 
-In order to find out whether our bindings from the previous step work we need to add todos to the list.
-The UI structure for this has already been set up.
-We just need to implement the `newTask` method in our [`TaskListController`][1].
+In this step we want to display todos in the UI.
 
-As the [`@FXML`][3]  annotation of this method suggests it is defined in [`tasks.fxml`][2].
-The `TextField` with the id `newTask` has an attribute `onAction="#newTodo"`.
-This links the text field's action event to the method in our controller.
+#### Top Level
 
-#### Get the TextField
-
-First we need the reference to the `TextField`, so we add another field to our controller:
+First of all we need a reference to the UI list, which is actually a [`VBox`][1].
 
     :::java
     @FXML
-    public TextField newTodo;
+    public VBox tasksList;
 
-Inside the `newTodo` method we then can get the text from the text field:
-
-    :::java
-    String title = newTodo.getText();
-
-#### Firing an Action with Parameters
-
-We will use an `Action` to tell the server that the user wants to add a new todo.
-On the server there's already a method defined for a action named `"newTask"`.
-Unlike the `"init"` action this one takes parameters as well.
-The parameters are stored in a map, which is passed to the constructor of `Action`.
-
-In addition you might want to prevent empty tasks from reaching the server.
+In order to add todos to the list we need to add a change listener.
+We want to render the list whenever the list of todos changes:
 
     :::java
-    if (!title.equals("")) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("title", title);
-        modelRef.fire(new Action("newTask", params));
-        newTodo.clear();
+    @ChangeListener(pattern = "root.model.(tasks)")
+    public void renderTasks(FxRef tasksRef) {
+        // TODO
     }
 
-<div class="alert alert-info">
-  <strong>Note:</strong> If you followed the tutorial you won't have a reference to <code>modelRef</code> inside <code>newTask</code>. You can either create
-  a private field in the controller and save the reference from the init method or call <code>appendPath</code> on the root ref as in the previous step.
-</div>
+We use special syntax here, denoting that we are expecting a reference to the tasks as call parameter.
+We do so by surrounding `tasks` in the pattern string with braces, much like you would do in a regular expression.
 
-After you insert a new todo and press Enter you should see the footer appear. This means that our bindings from step 3 work.
-However, we still don't see our todos in the list yet.
+Here is the body of the method:
 
-[1]: https://github.com/ankor-io/ankor-todo/blob/fx-step-4/todo-javafx-client/src/main/java/io/ankor/tutorial/TaskListController.java
-[2]: https://github.com/ankor-io/ankor-todo/blob/fx-step-4/todo-javafx-client/src/main/resources/tasks.fxml
-[3]: http://docs.oracle.com/javafx/2/api/javafx/fxml/FXML.html
+    :::java
+    tasksList.getChildren().clear(); // 1
+
+    int numTasks = tasksRef.<List>getValue().size(); // 2
+
+    for (int index = 0; index < numTasks; index++) {
+        FxRef itemRef = tasksRef.appendIndex(index); // 3
+        TaskPane node = new TaskPane(itemRef, index); // 4
+        tasksList.getChildren().add(node); // 5
+    }
+
+1. First we clear the task list.
+2. Next we need the number of tasks in the list. We do so by getting the value of `tasksRef`, which is a list.
+However, we are only interested in its length, not the actual list entries.
+3. Because we know that `tasksRef` references a list we can call the method `appendIndex` on it.
+It's basically the same as `get` for a list, but it returns another `Ref` instead of the list entry itself.
+4. For now lets just assume there is already a custom JavaFX component named `TaskPane` that takes a `Ref` and an index.
+5. Finally we add the new `TaskPane` to the UI list.
+
+Before you go on, you might want to add this line to your init method (not the constructor):
+
+    renderTasks(modelRef.appendPath("tasks"));
+
+This way todos that are already in the list when the application starts will be rendered.
+
+#### Defining a Custom JavaFX Component
+
+The `TaskPane` is a single todo entry in the list. The markup is already defined in a separate file [`task.fxml`][2].
+
+Open `TaskPane.java`. We will need the following properties:
+
+    :::java
+    private FxRef itemRef;
+    private int index;
+
+    @FXML
+    public TextField titleTextField;
+    @FXML
+    public ToggleButton completedButton;
+    @FXML
+    public Button deleteButton;
+
+The constructor is structured like this:
+
+    public TaskPane(FxRef itemRef, int index) {
+        this.itemRef = itemRef;
+        this.index = index;
+
+        loadFXML();
+        addEventListeners();
+        setValues();
+        bindProperties();
+    }
+
+We need to implement these four methods:
+
+* `loadFXML`: Load the markup that defines the component.
+* `addEventListeners`: Leave this unimplemented for now.
+* `setValues`: Set the initial values from the `itemRef`.
+* `bindProperties`: Enable two-way bindings.
+
+##### loadFXML
+
+    private void loadFXML() {
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("task.fxml"));
+        fxmlLoader.setRoot(this);
+        fxmlLoader.setController(this);
+        try {
+            fxmlLoader.load();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+##### setValues
+
+    private void setValues() {
+        titleTextField.textProperty().setValue(itemRef.appendPath("title").<String>getValue());
+        completedButton.selectedProperty().setValue(itemRef.appendPath("completed").<Boolean>getValue());
+        titleTextField.editableProperty().setValue(itemRef.appendPath("editable").<Boolean>getValue());
+    }
+
+##### bindProperties
+
+    private void bindProperties() {
+        titleTextField.textProperty().bindBidirectional(itemRef.appendPath("title").<String>fxProperty());
+        completedButton.selectedProperty().bindBidirectional(itemRef.appendPath("completed").<Boolean>fxProperty());
+        titleTextField.editableProperty().bindBidirectional(itemRef.appendPath("editable").<Boolean>fxProperty());
+    }
+
+[1]: http://docs.oracle.com/javafx/2/api/javafx/scene/layout/VBox.html
+[2]: https://github.com/ankor-io/ankor-todo/blob/fx-step-5/todo-fx/src/main/resources/task.fxml
