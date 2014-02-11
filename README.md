@@ -1,5 +1,7 @@
 ### Starting the Application
 
+#### The AnkorApplication class
+
 When creating a Ankor JavaFX application you have two choices: You can either extend the `AnkorApplication` class
 which starts the Ankor system for you, or you can set up your own Ankor system manually.
 Both work the same way under the hood and the rest of the tutorial does not depend on
@@ -41,32 +43,46 @@ Open [`App.java`][1] and add the following lines:
         }
     }
 
-The abstract `AnkorApplication` class does all the plumbing and wiring for you. When entering the
-`startFXClient` method a WebSocket connection has already been set up, the Ankor system
-has received an id from the server and heartbeat messages are sent to the server in fixed intervals.
+The abstract `AnkorApplication` class does all the plumbing and wiring for you: When entering the
+`startFXClient` method a WebSocket connection has been set up, the Ankor system
+has received an id from the server and heartbeat messages are being sent to the server in fixed intervals.
 
 For now we are connecting to an existing Ankor server at `wss://ankor-todo-sample.irian.at/websocket/ankor`.
-The test sever will be able to understand and process the messages that our todo application is going to send.
-This will give you the experience of an application developer adding a new client
-platform to an existing Ankor system.
-However, if you want to write your own server first you can do so by [heading over to the respective step][2].
+This server will be able to understand and process the messages that our todo application is going to send.
+This will give you the experience of an application developer adding a new client platform to an existing Ankor system.
+However, if you want to write your own server first you can learn how to do so in the [server section][2].
+
+#### Adding JavaFX to the classpath
+
+Now go to the `todo-fx` folder in the project.
+
+    cd todo-fx
+
+Before we can start the application we need to add JavaFX to the classpath.
+While JDK 7 ships with JavaFX it is not added to the classpath by default.
+The following command fixes this:
+
+    mvn jfx:fix-classpath
+
+<div class="alert alert-info"><strong>Note: </strong>You have to run this command as super user / with administrator privileges.</div>
+
+#### Starting the application
 
 You can now start the app and check if it throws any exceptions.
 
-    :::bash
-    // TODO maven command to start application
+    mvn jfx:run
 
-The window should look exactly like this. As you can see the UI structure has already been defined and
+The window should look exactly like the one below. As you can see the UI structure has already been defined and
 styled for you. Building an JavaFX app from ground up is outside the scope of this tutorial.</p>
 
 ![fx-step-1-1](/static/images/tutorial/fx-step-1-1.png)
 
 If the app doesn't start the test server could be offline.
 You can check the online status via
-[websocket.org](http://www.websocket.org/echo.html). The WebSocket url is `wss://ankor-todo-sample.irian.at/websocket/ankor`.
-A running Ankor server should return an UUID upon connecting.
+[websocket.org](http://www.websocket.org/echo.html) (the WebSocket url is `wss://ankor-todo-sample.irian.at/websocket/ankor`).
+A running Ankor server should send an UUID when a connection is established.
 
-Note that you can always [write your own server](#).
+If the server appears to be offline you can still [write your own server][2].
 
 [1]: https://github.com/ankor-io/ankor-todo/blob/fx-step-1/todo-javafx-client/src/main/java/io/ankor/tutorial/App.java
 [2]: /tutorials/server/0
