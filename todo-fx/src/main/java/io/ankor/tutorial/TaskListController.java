@@ -10,8 +10,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.util.converter.NumberStringConverter;
 
@@ -43,6 +42,17 @@ public class TaskListController implements Initializable {
     @FXML
     public VBox tasksList;
 
+    @FXML
+    public ToggleButton toggleAllButton;
+    @FXML
+    public Button clearButton;
+    @FXML
+    public RadioButton filterAll;
+    @FXML
+    public RadioButton filterActive;
+    @FXML
+    public RadioButton filterCompleted;
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         Ref rootRef = refFactory().ref("root");
@@ -65,6 +75,16 @@ public class TaskListController implements Initializable {
         todoCountNum.textProperty().bindBidirectional(
                 modelRef.appendPath("itemsLeft").<Number>fxProperty(),
                 new NumberStringConverter());
+
+        toggleAllButton.visibleProperty().bind(footerVisibilityProperty);
+        toggleAllButton.selectedProperty().bindBidirectional(modelRef.appendPath("toggleAll").<Boolean>fxProperty());
+
+        clearButton.textProperty().bind(modelRef.appendPath("itemsCompleteText").<String>fxProperty());
+        clearButton.visibleProperty().bind(modelRef.appendPath("clearButtonVisibility").<Boolean>fxProperty());
+
+        filterAll.selectedProperty().bindBidirectional(modelRef.appendPath("filterAllSelected").<Boolean>fxProperty());
+        filterActive.selectedProperty().bindBidirectional(modelRef.appendPath("filterActiveSelected").<Boolean>fxProperty());
+        filterCompleted.selectedProperty().bindBidirectional(modelRef.appendPath("filterCompletedSelected").<Boolean>fxProperty());
 
         renderTasks(modelRef.appendPath("tasks"));
     }
@@ -95,11 +115,13 @@ public class TaskListController implements Initializable {
 
     @FXML
     public void toggleAll(ActionEvent actionEvent) {
-        // TODO
+        Map<String, Object> params = new HashMap<>();
+        params.put("toggleAll", toggleAllButton.selectedProperty().get());
+        modelRef.fire(new Action("toggleAll", params));
     }
 
     @FXML
     public void clearTasks(ActionEvent actionEvent) {
-        // TODO
+        modelRef.fire(new Action("clearTasks"));
     }
 }
