@@ -1,15 +1,24 @@
 package io.ankor.tutorial;
 
+import at.irian.ankor.action.Action;
 import at.irian.ankor.fx.binding.fxref.FxRef;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class TaskPane extends AnchorPane {
     private FxRef itemRef;
@@ -28,7 +37,6 @@ public class TaskPane extends AnchorPane {
 
         loadFXML();
         addEventListeners();
-        setValues();
         bindProperties();
     }
 
@@ -44,13 +52,46 @@ public class TaskPane extends AnchorPane {
     }
 
     private void addEventListeners() {
-        // TODO
-    }
+        titleTextField.addEventFilter(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                if (event.getClickCount() > 1) {
+                    titleTextField.setEditable(true);
+                    titleTextField.selectAll();
+                }
+            }
+        });
 
-    private void setValues() {
-        titleTextField.textProperty().setValue(itemRef.appendPath("title").<String>getValue());
-        completedButton.selectedProperty().setValue(itemRef.appendPath("completed").<Boolean>getValue());
-        titleTextField.editableProperty().setValue(itemRef.appendPath("editable").<Boolean>getValue());
+        titleTextField.setOnKeyReleased(new EventHandler<KeyEvent>() {
+            @Override
+            public void handle(KeyEvent keyEvent) {
+                if (keyEvent.getCode() == KeyCode.ENTER) {
+                    titleTextField.setEditable(false);
+                }
+            }
+        });
+
+        titleTextField.focusedProperty().addListener(new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observableValue, Boolean newValue, Boolean oldValue) {
+                if (newValue == false) {
+                    titleTextField.setEditable(false);
+                }
+            }
+        });
+
+        completedButton.selectedProperty().addListener(new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observableValue, Boolean newValue, Boolean oldValue) {
+                if (newValue == false) {
+                    titleTextField.getStyleClass().remove("default");
+                    titleTextField.getStyleClass().add("strike-through");
+                } else {
+                    titleTextField.getStyleClass().remove("strike-through");
+                    titleTextField.getStyleClass().add("default");
+                }
+            }
+        });
     }
 
     private void bindProperties() {
@@ -60,7 +101,9 @@ public class TaskPane extends AnchorPane {
     }
 
     @FXML
-    public void delete(ActionEvent e) {
-        // TODO
+    public void delete(ActionEvent actionEvent) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("index", index);
+        itemRef.root().appendPath("model").fire(new Action("deleteTask", params));
     }
 }
