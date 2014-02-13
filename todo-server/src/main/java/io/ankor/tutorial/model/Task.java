@@ -2,19 +2,19 @@ package io.ankor.tutorial.model;
 
 import java.util.UUID;
 
-public class Todo {
+public class Task {
     private String id;
     private String title;
     private boolean completed = false;
 
-    public Todo() {}
+    public Task() {}
 
-    public Todo(String title) {
+    public Task(String title) {
         this.id = UUID.randomUUID().toString();
         this.title = title;
     }
 
-    public Todo(Todo t) {
+    public Task(Task t) {
         this.id = t.id;
         this.title = t.title;
         this.completed = t.completed;
