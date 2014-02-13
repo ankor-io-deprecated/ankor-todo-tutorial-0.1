@@ -1,67 +1,37 @@
-### Ankor Server
+### Testing the Setup
 
-In this tutorial we'll be building an Ankor server that will receive messages from one of our
-todo client apps, update its view model state and push those changes back to the client.
+In order to see the results of our work in this tutorial we'll connect a client to our Ankor server.
+The clients connect to the server via WebSocket. So we need a web server that supports them.
+[GlassFish 4][1] comes with WebSocket support out of the box, so we'll be using that one.
 
-The server can run within any web container that implements [JSR 356][1], the Java API for WebSockets.
-In this tutorial we'll be using an embedded [GlassFish 4][2] server, so you don't need to worry about it.
+To start the web server `cd` into the `todo-servlet` directory and execute this Maven goal:
 
-#### Before you start
+    mvn embedded-glassfish:run
 
-Please make sure that all software components are installed properly.
+This can take a while. GlassFish will be downloaded.
+After the process completes point your browser to `http://localhost:8080/`.
+The page should look something like this:
 
-<div class="tabbable ">
-    <ul class="nav nav-tabs">
-        <li class="active"><a href="#tab1" data-toggle="tab">Java</a></li>
-        <li><a href="#tab2" data-toggle="tab">Maven</a></li>
-        <li><a href="#tab3" data-toggle="tab">Git</a></li>
-    </ul>
-    <div class="tab-content">
-        <div class="tab-pane active" id="tab1">
-            <p>JDK 1.7, download from <a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">here</a>.</p>
-            <p>Make sure that<p></p>
-            <ul>
-                <li>JAVA_HOME exists in your user variables (JDK installation directory)</li>
-                <li>and that %JAVA_HOME%\bin is in your Path environment variable</li>
-            </ul>
-            <p>Open command line and test</p>
-            <pre><code>java -version</code></pre>
-        </div>
-        <div class="tab-pane" id="tab2">
-            <p>Maven 3.0.5 or higher, download from <a href="http://maven.apache.org/download.cgi">here</a>.</p>
-            <p>Make sure that<p></p>
-            <ul>
-                <li>MAVEN_HOME exists in your user variables (JDK installation directory)</li>
-                <li>and that %MAVEN_HOME%\bin is in your Path environment variable</li>
-            </ul>
-            <p>Open command line and test</p>
-            <pre><code>mvn -version</code></pre>
-        </div>
-        <div class="tab-pane" id="tab3">
-            <p>Install Git, download from <a href="http://git-scm.com/download">the Git site</a>.</p>
-        </div>
-    </div>
-</div>
+    :::text
+    Up and Running!
+    WebSocket connection established
+    UUID received: 9b1ac725-5bdd-46d2-9b9e-e5a283ae057b
 
-#### Get the code
+When we make changes to the code we want to redeploy them.
+In order to do so, in a new command prompt `cd` into `todo-server` and run:
 
-Clone the git repository from:
+    mvn package
 
-    :::bash
-    git clone https://github.com/ankor-io/ankor-todo.git
+Now you can redeploy your app by pressing `Enter` in the command line that started the server.
+You can shut down the server by typing `X`.
 
-The folder ankor-todo is empty. To get the first tutorial step, checkout branch `server-step-0`.
-This is how you may switch between tutorial steps later.
+#### Connecting a client
 
-    :::bash
-    cd ankor-todo
-    git checkout -f server-step-0
+If you went through one of the client tutorials you can use these.
+Just make sure they connect to `ws://localhost:8080/websockets/ankor`.
+Otherwise you can use the JavaFX client implementation provided in this repository:
 
-Now you got a maven project based on these modules:
+    cd todo-fx
+    mvn jfx:run
 
-    fx      : Todo Sample - JavaFX Client
-    server  : Todo Sample - Server
-    servlet : Todo Sample - Servlet
-
-[1]: http://www.oracle.com/technetwork/articles/java/jsr356-1937161.html
-[2]: https://glassfish.java.net/
+[1]: https://glassfish.java.net/
