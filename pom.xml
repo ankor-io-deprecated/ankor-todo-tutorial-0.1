@@ -1,4 +1,3 @@
-<!-- TODO: add Ankor repository -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -16,7 +15,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <ankor.version>0-SNAPSHOT</ankor.version>
+        <ankor.version>0.1</ankor.version>
     </properties>
 
     <dependencyManagement>
@@ -42,5 +41,21 @@
             </plugin>
         </plugins>
     </build>
+
+    <repositories>
+        <repository>
+            <id>ankor-release</id>
+            <url>http://repo.irian.at/content/repositories/ankor-release/</url>
+            <releases><enabled>true</enabled></releases>
+            <snapshots><enabled>false</enabled></snapshots>
+        </repository>
+
+        <repository>
+            <id>ankor-snapshot</id>
+            <url>http://repo.irian.at/content/repositories/ankor-snapshot/</url>
+            <releases><enabled>false</enabled></releases>
+            <snapshots><enabled>true</enabled></snapshots>
+        </repository>
+    </repositories>
 
 </project>
