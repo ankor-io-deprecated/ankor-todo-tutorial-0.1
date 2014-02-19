@@ -20,8 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
-import static at.irian.ankor.fx.websocket.AnkorApplication.refFactory;
-
 public class TaskListController implements Initializable {
 
     private FxRef modelRef;
@@ -55,7 +53,7 @@ public class TaskListController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        Ref rootRef = refFactory().ref("root");
+        Ref rootRef = App.refFactory().ref("root");
         FXControllerSupport.init(this, rootRef);
         rootRef.fire(new Action("init"));
     }
