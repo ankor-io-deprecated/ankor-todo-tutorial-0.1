@@ -37,7 +37,7 @@ public class TaskListController implements Initializable {
 
     @ChangeListener(pattern = "root")
     public void myInit() {
-        FxRef rootRef = refFactory().ref("root");
+        FxRef rootRef = App.refFactory().ref("root");
         FxRef modelRef = rootRef.appendPath("model");
         FxRef footerVisibilityRef = modelRef.appendPath("footerVisibility");
 
