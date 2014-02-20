@@ -1,12 +1,11 @@
 import at.irian.ankor.ref.Ref;
 import at.irian.ankor.servlet.websocket.AnkorEndpoint;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import io.ankor.tutorial.model.TaskRepository;
+import io.ankor.tutorial.viewmodel.ModelRoot;
 
-@SuppressWarnings("unused")
 public class TodoEndpoint extends AnkorEndpoint {
     @Override
     protected Object getModelRoot(Ref rootRef) {
-        // TODO
-        throw new NotImplementedException();
+        return new ModelRoot(rootRef, new TaskRepository());
     }
 }
