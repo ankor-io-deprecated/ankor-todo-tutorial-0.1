@@ -1,8 +1,11 @@
 package io.ankor.tutorial.viewmodel;
 
+import at.irian.ankor.annotation.ActionListener;
+import at.irian.ankor.annotation.Param;
 import at.irian.ankor.messaging.AnkorIgnore;
 import at.irian.ankor.pattern.AnkorPatterns;
 import at.irian.ankor.ref.Ref;
+import io.ankor.tutorial.model.Task;
 import io.ankor.tutorial.model.TaskRepository;
 
 public class TaskListModel {
@@ -26,6 +29,15 @@ public class TaskListModel {
         footerVisibility = true;
         itemsLeft = 10;
         itemsLeftText = "imaginary items left";
+    }
+
+    @ActionListener
+    public void newTask(@Param("title") final String title) {
+        Task task = new Task(title);
+        taskRepository.saveTask(task);
+
+        int itemsLeft = taskRepository.getActiveTasks().size();
+        modelRef.appendPath("itemsLeft").setValue(itemsLeft);
     }
 
     public Boolean getFooterVisibility() {
