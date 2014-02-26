@@ -5,12 +5,16 @@ import java.util.*;
 public class TaskRepository {
     private Map<String, Task> tasks = new LinkedHashMap<>();
 
+    public synchronized Task findTask(String id) {
+        return tasks.get(id);
+    }
+
     public synchronized void saveTask(Task task) {
         tasks.put(task.getId(), task);
     }
 
-    public synchronized Task findTask(String id) {
-        return tasks.get(id);
+    public synchronized void deleteTask(Task task) {
+        tasks.remove(task.getId());
     }
 
     public synchronized List<Task> fetchTasks(Filter filter) {
@@ -63,7 +67,9 @@ public class TaskRepository {
         }
     }
 
-    public synchronized void deleteTask(Task task) {
-        tasks.remove(task.getId());
+    public synchronized void toggleAll(boolean toggleAll) {
+        for (Task task : tasks.values()) {
+            task.setCompleted(toggleAll);
+        }
     }
 }
