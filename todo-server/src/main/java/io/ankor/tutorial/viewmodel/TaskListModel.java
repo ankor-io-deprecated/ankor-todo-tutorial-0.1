@@ -7,6 +7,7 @@ import at.irian.ankor.messaging.AnkorIgnore;
 import at.irian.ankor.pattern.AnkorPatterns;
 import at.irian.ankor.ref.CollectionRef;
 import at.irian.ankor.ref.Ref;
+import io.ankor.tutorial.model.Filter;
 import io.ankor.tutorial.model.Task;
 import io.ankor.tutorial.model.TaskRepository;
 
@@ -32,6 +33,11 @@ public class TaskListModel {
 
     private List<TaskModel> tasks = new ArrayList<>();
 
+    private Filter filter = Filter.all;
+    private Boolean filterAllSelected = true;
+    private Boolean filterActiveSelected = false;
+    private Boolean filterCompletedSelected = false;
+
     public TaskListModel(Ref modelRef, TaskRepository taskRepository) {
         AnkorPatterns.initViewModel(this, modelRef);
 
@@ -50,8 +56,10 @@ public class TaskListModel {
         int itemsLeft = taskRepository.fetchActiveTasks().size();
         updateItemsCount();
 
-        TaskModel model = new TaskModel(task);
-        tasksRef().add(model);
+        if (!filter.equals(Filter.completed)) {
+            TaskModel model = new TaskModel(task);
+            tasksRef().add(model);
+        }
     }
 
     private CollectionRef tasksRef() {
@@ -67,6 +75,20 @@ public class TaskListModel {
         updateItemsCount();
 
         tasksRef().delete(index);
+    }
+
+    @ActionListener
+    public void clearTasks() {
+        taskRepository.clearTasks();
+        updateItemsCount();
+        reloadTasks(filter);
+    }
+
+    @ActionListener
+    public void toggleAll(@Param("toggleAll") final boolean toggleAll) {
+        taskRepository.toggleAll(toggleAll);
+        updateItemsCount();
+        reloadTasks(filter);
     }
 
     @ChangeListener(pattern = "root.model.itemsLeft")
@@ -86,6 +108,42 @@ public class TaskListModel {
             "root.model.itemsComplete"})
     public void updateFooterVisibility() {
         modelRef.appendPath("footerVisibility").setValue(itemsLeft != 0 || itemsComplete != 0);
+    }
+
+    @ChangeListener(pattern = "root.model.filter")
+    public void updateFilterSelected() {
+        modelRef.appendPath("filterAllSelected").setValue(filter.equals(Filter.all));
+        modelRef.appendPath("filterActiveSelected").setValue(filter.equals(Filter.active));
+        modelRef.appendPath("filterCompletedSelected").setValue(filter.equals(Filter.completed));
+        reloadTasks(filter);
+    }
+
+    @ChangeListener(pattern = "root.model.tasks.*.completed")
+    public void completedChanged() {
+        updateItemsCount();
+        reloadTasks(filter);
+    }
+
+    @ChangeListener(pattern = {
+            "root.model.tasks.(*).title",
+            "root.model.tasks.(*).completed"})
+    public void saveTask(Ref ref) {
+        Task model = ref.getValue();
+        taskRepository.saveTask(model);
+    }
+
+    private void reloadTasks(Filter filter) {
+        List<Task> tasks = taskRepository.fetchTasks(filter);
+        List<TaskModel> taskModels = mapTasksToTaskModels(tasks);
+        tasksRef().setValue(taskModels);
+    }
+
+    private List<TaskModel> mapTasksToTaskModels(List<Task> tasks) {
+        List<TaskModel> res = new ArrayList<>(tasks.size());
+        for (Task t : tasks) {
+            res.add(new TaskModel(t));
+        }
+        return res;
     }
 
     private String itemsLeftText(int itemsLeft) {
@@ -163,5 +221,37 @@ public class TaskListModel {
 
     public void setToggleAll(Boolean toggleAll) {
         this.toggleAll = toggleAll;
+    }
+
+    public Filter getFilter() {
+        return filter;
+    }
+
+    public void setFilter(Filter filter) {
+        this.filter = filter;
+    }
+
+    public Boolean getFilterAllSelected() {
+        return filterAllSelected;
+    }
+
+    public void setFilterAllSelected(Boolean filterAllSelected) {
+        this.filterAllSelected = filterAllSelected;
+    }
+
+    public Boolean getFilterActiveSelected() {
+        return filterActiveSelected;
+    }
+
+    public void setFilterActiveSelected(Boolean filterActiveSelected) {
+        this.filterActiveSelected = filterActiveSelected;
+    }
+
+    public Boolean getFilterCompletedSelected() {
+        return filterCompletedSelected;
+    }
+
+    public void setFilterCompletedSelected(Boolean filterCompletedSelected) {
+        this.filterCompletedSelected = filterCompletedSelected;
     }
 }
