@@ -47,7 +47,7 @@ public class TaskListModel {
         Task task = new Task(title);
         taskRepository.saveTask(task);
 
-        int itemsLeft = taskRepository.getActiveTasks().size();
+        int itemsLeft = taskRepository.fetchActiveTasks().size();
         updateItemsCount();
 
         TaskModel model = new TaskModel(task);
@@ -63,7 +63,7 @@ public class TaskListModel {
         Task task = tasks.get(index);
         taskRepository.deleteTask(task);
 
-        int itemsLeft = taskRepository.getActiveTasks().size();
+        int itemsLeft = taskRepository.fetchActiveTasks().size();
         updateItemsCount();
 
         tasksRef().delete(index);
@@ -97,8 +97,8 @@ public class TaskListModel {
     }
 
     private void updateItemsCount() {
-        modelRef.appendPath("itemsLeft").setValue(taskRepository.getActiveTasks().size());
-        modelRef.appendPath("itemsComplete").setValue(taskRepository.getCompletedTasks().size());
+        modelRef.appendPath("itemsLeft").setValue(taskRepository.fetchActiveTasks().size());
+        modelRef.appendPath("itemsComplete").setValue(taskRepository.fetchCompletedTasks().size());
     }
 
     public Boolean getFooterVisibility() {
