@@ -6,16 +6,16 @@ import at.irian.ankor.ref.Ref;
 import io.ankor.tutorial.model.TaskRepository;
 
 public class TaskListModel {
-    @AnkorIgnore
-    private final TaskRepository taskRepository;
 
     @AnkorIgnore
     private final Ref modelRef;
+    
+    @AnkorIgnore
+    private final TaskRepository taskRepository;
 
-    private Boolean footerVisibility;
-    private Integer itemsLeft;
+    private Boolean footerVisibility = false;
+    private Integer itemsLeft = 0;
     private String itemsLeftText;
-
 
     public TaskListModel(Ref modelRef, TaskRepository taskRepository) {
         AnkorPatterns.initViewModel(this, modelRef);
