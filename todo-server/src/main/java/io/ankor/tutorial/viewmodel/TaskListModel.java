@@ -15,8 +15,8 @@ public class TaskListModel {
     @AnkorIgnore
     private final Ref modelRef;
 
-    private Boolean footerVisibility;
-    private Integer itemsLeft;
+    private Boolean footerVisibility = false;
+    private Integer itemsLeft = 0;
     private String itemsLeftText;
 
 
