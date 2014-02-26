@@ -36,7 +36,7 @@ public class TaskListModel {
         Task task = new Task(title);
         taskRepository.saveTask(task);
 
-        int itemsLeft = taskRepository.getActiveTasks().size();
+        int itemsLeft = taskRepository.fetchActiveTasks().size();
         modelRef.appendPath("itemsLeft").setValue(itemsLeft);
     }
 
