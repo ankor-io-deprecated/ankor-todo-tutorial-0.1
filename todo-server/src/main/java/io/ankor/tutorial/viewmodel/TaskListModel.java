@@ -118,18 +118,15 @@ public class TaskListModel {
         reloadTasks(filter);
     }
 
-    @ChangeListener(pattern = "root.model.tasks.*.completed")
-    public void completedChanged() {
-        updateItemsCount();
-        reloadTasks(filter);
-    }
-
     @ChangeListener(pattern = {
-            "root.model.tasks.(*).title",
-            "root.model.tasks.(*).completed"})
+            "root.model.tasks.(*).completed",
+            "root.model.tasks.(*).title"})
     public void saveTask(Ref ref) {
         Task model = ref.getValue();
         taskRepository.saveTask(model);
+
+        updateItemsCount();
+        reloadTasks(filter);
     }
 
     private void reloadTasks(Filter filter) {
