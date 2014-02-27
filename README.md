@@ -1,109 +1,127 @@
-### Reacting to Actions
+### Reacting to Changes
 
-In this step we will deal with Actions that are sent from the client.
-
-#### Actions
-
-Actions are a core concept of Ankor.
-An [`Action`][4] is generally used to make user interaction explicit.
-
-In this case we will deal with the `"newTask"` action.
-This `Action` is triggered when the users creates a new todo.
-It contains the title of the new task as a parameter.
+Earlier we've seen how to use the `@ActionListener` annotation to react to `Action`s from the client.
+In this step we'll be using the `@ChangeListener` annotation to react to changes form both the client and server.
 
 #### Before we start
 
-Let's set the initial state of our three view model properties based on the database:
+It's time to add some additional properties:
 
     :::java
-    itemsLeft = taskRepository.getActiveTasks().size();
-    itemsLeftText = itemsLeftText(itemsLeft);
-    footerVisibility = taskRepository.getTasks().size() != 0;
+    private Boolean clearButtonVisibility = false;
+    private Integer itemsComplete = 0;
+    private String itemsCompleteText;
+    private Boolean toggleAll = false;
 
-The `itemsLeftText` helper method is simply:
+* `itemsComplete` is the number of todos that have been completed.
+* `itemsCompleteText` is the text inside the clear button.
+* Since the clear button should not be visible when there are no completed todos, we need a `clearButtonVisibility`.
+* `toggleAll` is the active state of the `toggleAll` button.
+
+<div class="alert alert-info">
+    <strong>Note:</strong>
+    Don't forget to create getters and setters for these properties.
+</div>
+
+Let's set the initial state of our view model text properties:
+
+    :::java
+    public TaskListModel(Ref modelRef, TaskRepository taskRepository) {
+        AnkorPatterns.initViewModel(this, modelRef);
+        this.modelRef = modelRef;
+        this.taskRepository = taskRepository;
+
+        this.itemsLeftText = itemsLeftText(itemsLeft);
+        this.itemsCompleteText = itemsCompleteText(itemsComplete);
+    }
+
+The `itemsLeftText` and `itemsCompleteText` helper methods are:
 
     :::java
     private String itemsLeftText(int itemsLeft) {
         return (itemsLeft == 1) ? "item left" : "items left";
     }
 
-#### Adding an ActionListener
-
-##### Client: Firing Actions
-
-You can skip this section
-For reference, the code for firing an Action in the JavaFX client looks like this:
-
-    :::java
-    Map<String, Object> params = new HashMap<>();
-    params.put("title", title);
-    modelRef.fire(new Action("newTask", params));
-
-It looks similar for other platforms.
-Anyway, what the server receives will look like this:
-
-    {
-        "senderId": "...",
-        "modelId": "...",
-        "messageId": "...",
-        "property": "root.model",
-        "action": {
-            "name": "newTask",
-            "params": {
-                "title": "test"
-            }
-        }
+    private String itemsCompleteText(int itemsComplete) {
+        return String.format("Clear completed (%d)", itemsComplete);
     }
 
-An `Action` always has a name.
-Optionally it can have parameters.
-If so, each of the parameters mast have a name as well.
+#### Methods as Change Listeners
 
-##### Server: Reacting to Actions
-
-Instead of adding event listeners ourselves we will use Ankor's support for annotations.
-We can turn a method into an action listener by annotating it with `@ActionListener`.
-However there are a few things to consider:
-
-1. The name of the method must be the same as the name of the Action.
-2. If the Action has parameters, they will become call parameters and need to be annotated as well.
-
-Let's see how this looks for the `newTask` Action:
+What we want to have is a method that updates the `itemsLeftText` based on the number of tasks:
 
     :::java
-    @ActionListener
-    public void newTask(@Param("title") final String title) {
-        // ...
+    modelRef.appendPath("itemsLeftText").setValue(itemsLeftText(itemsLeft));
+
+These statements should be called whenever the `itemsLeft` property changes.
+We can get this behaviour with a change listener.
+
+A method annotated with the [`@ChangeListener`][1] annotation gets called whenever a certain property changes.
+The property is specified by a `pattern`.
+Roughly speaking the pattern is the same syntax as if you were accessing the property in JSON.
+We will see more advanced patterns later.
+
+In our chase we have `"root.model.itemsLeft"`.
+`root` points to the `ModelRoot`, `model` to the `TaskListModel`, and `itemsLeft` to our desired property.
+
+##### Updating itemsLeftText
+
+This will keep `itemsLeftText` in sync with `itemsLeft`.
+We will also set `toggleAll`, since it depends on `itemsLeft` as well:
+
+    :::java
+    @ChangeListener(pattern = "root.model.itemsLeft")
+    public void itemsLeftChanged() {
+        modelRef.appendPath("itemsLeftText").setValue(itemsLeftText(itemsLeft));
+        modelRef.appendPath("toggleAll").setValue(itemsLeft == 0);
     }
 
-Note the `@Param` annotation on the method parameter.
+##### Updating the clear button
 
-##### Implementing the newTask method
-
-In the body of the method we create a new task and add it to the task repository.
+Another one for the clear button:
 
     :::java
-    Task task = new Task(title);
-    taskRepository.saveTask(task);
+    @ChangeListener(pattern = "root.model.itemsComplete")
+    public void updateClearButton() {
+        modelRef.appendPath("clearButtonVisibility").setValue(itemsComplete != 0);
+        modelRef.appendPath("itemsCompleteText").setValue(itemsCompleteText(itemsComplete));
+    }
 
-However, this alone will not trigger any change in the UI.
-We want to change the `itemsLeft` property to reflect the actual number of tasks in the repository.
-Simply setting the property will not trigger any events though.
+##### Changing the footer visibility
 
-    :::java
-    int itemsLeft = taskRepository.getActiveTasks().size();
-
-    // Ankor will not notice this
-    this.itemsLeft = itemsLeft;
-
-Instead we set the new value via the `Ref` that points at the `itemsLeft` property.
-We can obtain this Ref by appending `"itemsLeft"` to our `modelRef`.
+We can also listen to multiple patterns:
 
     :::java
-    int itemsLeft = taskRepository.getActiveTasks().size();
+    @ChangeListener(pattern = {
+            "root.model.itemsLeft",
+            "root.model.itemsComplete"})
+    public void updateFooterVisibility() {
+        modelRef.appendPath("footerVisibility").setValue(itemsLeft != 0 || itemsComplete != 0);
+    }
+
+##### Keeping the item counters updated
+
+As you can see all these listeners depended on `itemsLeft` and `itemsComplete`.
+But these properties are currently not consistent with the repository.
+To fix this we define a helper method that sets these properties based on the number of entries in the repository.
+
+    :::java
+    private void updateItemsCount() {
+        modelRef.appendPath("itemsLeft").setValue(taskRepository.fetchActiveTasks().size());
+        modelRef.appendPath("itemsComplete").setValue(taskRepository.fetchCompletedTasks().size());
+    }
+
+Inside our `newTask` and `deleteTask` methods we can now replace:
+
+    :::java
+    int itemsLeft = taskRepository.fetchActiveTasks().size();
     modelRef.appendPath("itemsLeft").setValue(itemsLeft);
 
-This will send a change event to the client and trigger any events there.
-It will also update the local variable, so that `(this.itemsLeft == itemsLeft)` evaluates to `true`.
+with:
 
-[4]: #TODOLinkToDocumentationAction
+    :::java
+    updateItemsCount();
+
+
+[1]: #linkToDocu
+
