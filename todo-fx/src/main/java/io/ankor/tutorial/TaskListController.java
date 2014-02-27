@@ -4,6 +4,7 @@ import at.irian.ankor.action.Action;
 import at.irian.ankor.annotation.ChangeListener;
 import at.irian.ankor.fx.binding.fxref.FxRef;
 import at.irian.ankor.fx.controller.FXControllerSupport;
+import at.irian.ankor.pattern.AnkorPatterns;
 import at.irian.ankor.ref.Ref;
 import javafx.beans.property.Property;
 import javafx.event.ActionEvent;
@@ -125,16 +126,16 @@ public class TaskListController implements Initializable {
 
     @FXML
     public void filterAllClicked(ActionEvent actionEvent) {
-        // TODO
+        AnkorPatterns.changeValueLater(modelRef.appendPath("filter"), "all");
     }
 
     @FXML
     public void filterActiveClicked(ActionEvent actionEvent) {
-        // TODO
+        AnkorPatterns.changeValueLater(modelRef.appendPath("filter"), "active");
     }
 
     @FXML
     public void filterCompletedClicked(ActionEvent actionEvent) {
-        // TODO
+        AnkorPatterns.changeValueLater(modelRef.appendPath("filter"), "completed");
     }
 }
