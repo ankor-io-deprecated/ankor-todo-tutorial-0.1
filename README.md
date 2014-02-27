@@ -34,7 +34,7 @@ Please make sure that all software components are installed properly.
                 <li>and that %JAVA_HOME%\bin is in your Path environment variable</li>
             </ul>
             <p>Open command line and test</p>
-            <pre><code>java -version</code></pre>
+            <pre>java -version</pre>
         </div>
         <div class="tab-pane" id="tab2">
             <p>Maven 3.0.5 or higher, download from <a href="http://maven.apache.org/download.cgi">here</a>.</p>
@@ -44,7 +44,7 @@ Please make sure that all software components are installed properly.
                 <li>and that %MAVEN_HOME%\bin is in your Path environment variable</li>
             </ul>
             <p>Open command line and test</p>
-            <pre><code>mvn -version</code></pre>
+            <pre>mvn -version</pre>
         </div>
         <div class="tab-pane" id="tab3">
             <p>Install Git, download from <a href="http://git-scm.com/download">the Git site</a>.</p>
@@ -71,3 +71,4 @@ Now you got a maven project based on these modules:
     todo-fx      : Todo Sample - JavaFX Client
     todo-server  : Todo Sample - Server
     todo-servlet : Todo Sample - Servlet
+
