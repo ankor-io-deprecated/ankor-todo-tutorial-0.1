@@ -10,8 +10,10 @@ In order to do so we need to specify the type of our component (`Node` being the
 it exactly like its id attribute in [`tasks.fxml`][2].
 Adding the [`@FXML`][5] annotation makes it explicit that this field is defined in the markup.
 
-In this step we want to hide and show the footer based on the number of uncompleted tasks, as in the reference
-implementation of TodoMVC. This means we need to access the footer.
+In this step we want to hide and show the footer (highlighted red in the image) based on the number of uncompleted tasks.
+The footer should only be visible if there is at least one todo either completed or not.
+
+The footer is split in two parts.
 Its ids are `footerTop` and `footerBottom`, so we'll need those two fields in our controller:
 
     :::java
@@ -19,6 +21,8 @@ Its ids are `footerTop` and `footerBottom`, so we'll need those two fields in ou
     public Node footerTop;
     @FXML
     public Node footerBottom;
+
+![fx-step-3-1](http://ankor.io/static/images/tutorial/fx-step-3-1.png)
 
 #### Navigating Ankor with Refs
 
@@ -33,7 +37,15 @@ As we've seen previously our todo application's view model is structured like th
             "tasks": [],
             "filter": "all",
             "itemsLeft": 0,
-            ...
+            "itemsLeftText": "items left",
+            "footerVisibility": false,
+            "itemsComplete": 0,
+            "itemsCompleteText": "Clear completed (0)",
+            "clearButtonVisibility": false,
+            "toggleAll": true,
+            "filterAllSelected": true,
+            "filterActiveSelected": false,
+            "filterCompletedSelected": false
         }
     }
 
@@ -42,7 +54,7 @@ which hold the actual state of the UI.
 To navigate the tree we can "append" a path to a `Ref`, yielding a new `Ref` to the specified child node.
 
     :::java
-    FxRef rootRef = refFactory().ref("root");
+    FxRef rootRef = App.refFactory().ref("root");
     FxRef modelRef = rootRef.appendPath("model");
     FxRef footerVisibilityRef = modelRef.appendPath("footerVisibility");
 
