@@ -28,4 +28,19 @@ public class TaskListController implements Initializable {
     public void clearTasks(ActionEvent actionEvent) {
         // TODO
     }
+
+    @FXML
+    public void filterAllClicked(ActionEvent actionEvent) {
+        // TODO
+    }
+
+    @FXML
+    public void filterActiveClicked(ActionEvent actionEvent) {
+        // TODO
+    }
+
+    @FXML
+    public void filterCompletedClicked(ActionEvent actionEvent) {
+        // TODO
+    }
 }
