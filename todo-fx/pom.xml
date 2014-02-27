@@ -22,7 +22,6 @@
             <scope>compile</scope>
         </dependency>
 
-        <!-- we want to reuse some of the server code -->
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
@@ -69,6 +68,15 @@
                 <configuration>
                     <mainClass>io.ankor.tutorial.App</mainClass>
                 </configuration>
+
+                <!-- http://stackoverflow.com/a/20501951 -->
+                <dependencies>
+                    <dependency>
+                        <groupId>org.twdata.maven</groupId>
+                        <artifactId>mojo-executor</artifactId>
+                        <version>2.1.0</version>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
     </build>
