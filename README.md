@@ -1,70 +1,89 @@
-### Starting the Application
+### Initializing Ankor
 
-When creating a Ankor JavaFX application you have two choices: You can either extend the `AnkorApplication` class
-which starts the Ankor system for you, or you can set up your own Ankor system manually.
-Both work the same way under the hood and the rest of the tutorial does not depend on
-your choice here. However, choose the first option if you want to start quickly.
+Next, open [`TaskListController.java`][1]. This is a JavaFX controller. A controller is attached to an
+`.fxml` file by specifying it as an attribute in the root node. You can take a look at it in [`tasks.fxml`][2].
 
-The fastest way to create a Ankor JavaFX app is to extend the `AnkorApplication` class. This
+#### Initialize
 
-Open [`App.java`][1] and add the following lines:
+Inside `initialize` we have to take care of two things:
 
     :::java
-    public class App extends AnkorApplication {
+    @Override
+    public void initialize(URL url, ResourceBundle resourceBundle) {
+        Ref rootRef = App.refFactory().ref("root");
+        rootRef.fire(new Action("init"));
+    }
 
-        // This is to start the JavaFX application.
-        public static void main(String[] args) {
-            launch(args);
-        }
+The first statement will return a `Ref`, the second one will send an `Action` to the server.
 
-        // This method gets called after a connection has been established
-        @Override
-        protected void startFXClient(Stage stage) throws Exception {
-            stage.setTitle("Ankor Todo Sample");
+##### References
 
-            // predefined fxml
-            Pane myPane = FXMLLoader.load(getClass().getClassLoader().getResource("tasks.fxml"));
+A core concept of Ankor is the [`Ref`][3]. It represents a reference to a view model.
+Since we are writing a client application it's a remote reference to a view model on the server.
+All view model properties are ordered in a hierarchical tree structure.
+The Ref object allows us to navigate this tree and manipulate the underlying properties.
+By requesting the reference that lies at the `root` of the tree we get access to the complete view model.
+However, it is still empty except for the root. By firing an `Action` on root the view model will be initialized.
 
-            Scene myScene = new Scene(myPane);
+##### Actions
 
-            // predefined styles
-            myScene.getStylesheets().add("style.css");
+Another core concept of Ankor are Actions. An [`Action`][4] is generally used to make user interaction explicit.
+In this case we use it to tell the Ankor server to set up a new view model for us.
+The server will process the action and return a response containing the initial state of the application.
+The data is JSON encoded and will look like this:
 
-            stage.setScene(myScene);
-            stage.show();
-        }
-
-        // The WebSocket endpoint to connect to
-        @Override
-        protected String getWebSocketUri() {
-            return "wss://ankor-todo-sample.irian.at/websocket/ankor";
+    ::javascript
+    {
+        "senderId": "ankor-servlet-server",
+        "modelId": "...",
+        "messageId": "ankor-servlet-server#1",
+        "property": "root",
+        "change": {
+            "type": "value",
+            "value": {
+                "model": {
+                    "tasks": [],
+                    "filter": "all",
+                    "itemsLeft": 0,
+                    ...
+                }
+            }
         }
     }
 
-The abstract `AnkorApplication` class does all the plumbing and wiring for you: When entering the
-`startFXClient` method a WebSocket connection has been set up, the Ankor system
-has received an id from the server and heartbeat messages are being sent to the server in fixed intervals.
+`model` is the name of the node that has changed. Its children are the names and values of the properties
+that have changed. These are an empty array of todos, the number of items that are left, and so on.
+It also has a `type` which is used to represent different kinds of changes like inserts or deletes on collections.
 
-For now we are connecting to an existing Ankor server at `wss://ankor-todo-sample.irian.at/websocket/ankor`.
-This server will be able to understand and process the messages that our todo application is going to send.
-This will give you the experience of an application developer adding a new client platform to an existing Ankor system.
-However, if you want to write your own server first you can learn how to do so in the [server section][2].
+When the message arrives, the client-side Ankor system will pick up the new values and update
+its own view model. However there will be no visible changes in the UI, since we haven't set up any bindings yet.
 
-You can now start the app and check if it throws any exceptions.
+#### Adding annotation support
 
-    // TODO maven command to start application
+Before we go on we have to tell Ankor to look for annotations. It will allow us to write normal Java methods
+in our `TaskListController` that will be executed when a certain property changes. Otherwise we would have to write
+a lot of boilerplate code for adding individual event listeners.
 
-The window should look exactly like the one below. As you can see the UI structure has already been defined and
-styled for you. Building an JavaFX app from ground up is outside the scope of this tutorial.</p>
+We add this line to our initialize method:
 
-![fx-step-1-1](/static/images/tutorial/fx-step-1-1.png)
+    ::java
+    FXControllerSupport.init(this, rootRef);
 
-If the app doesn't start the test server could be offline.
-You can check the online status via
-[websocket.org](http://www.websocket.org/echo.html) (the WebSocket url is `wss://ankor-todo-sample.irian.at/websocket/ankor`).
-A running Ankor server should send an UUID when a connection is established.
+We can now create our own initialize method, the one that will be called when the response from the server returns
+after the `init` action has been fired:
 
-If the server appears to be offline you can still [write your own server][2].
+    ::java
+    @ChangeListener(pattern = "root")
+    public void myInit() {
+        // TODO
+    }
 
-[1]: https://github.com/ankor-io/ankor-todo/blob/fx-step-1/todo-javafx-client/src/main/java/io/ankor/tutorial/App.java
-[2]: /tutorials/server/0
+The `ChangeListener` annotation says that we want to watch for changes on a property.
+The `pattern` is the path to the property that we want to listen for, in this case it's the `root`.
+
+In this method we will then implement bindings to UI components.
+
+[1]: https://github.com/ankor-io/ankor-todo/blob/fx-step-2/todo-javafx-client/src/main/java/io/ankor/tutorial/TaskListController.java
+[2]: https://github.com/ankor-io/ankor-todo/blob/fx-step-2/todo-javafx-client/src/main/resources/tasks.fxml
+[3]: #TODOLinkToDocumentationRef
+[4]: #TODOLinkToDocumentationAction
