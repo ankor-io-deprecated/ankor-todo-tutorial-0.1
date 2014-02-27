@@ -2,8 +2,6 @@
 
 There are only a few top-level things missing.
 
-![fx-step-7-1](/static/images/tutorial/fx-step-7-1.png)
-
 #### Adding the remaining bindings
 
 In our `TaskListController` there are still some UI properties that are not bound to any server variables.
@@ -21,6 +19,8 @@ For the sake of simplicity we skipped them in step 3.
     @FXML
     public RadioButton filterCompleted;
 
+![fx-step-7-1](http://ankor.io/static/images/tutorial/fx-step-7-1.png)
+
 We add the bindings in our root change listener (`myInit`):
 
     :::java
@@ -33,6 +33,32 @@ We add the bindings in our root change listener (`myInit`):
     filterAll.selectedProperty().bindBidirectional(modelRef.appendPath("filterAllSelected").<Boolean>fxProperty());
     filterActive.selectedProperty().bindBidirectional(modelRef.appendPath("filterActiveSelected").<Boolean>fxProperty());
     filterCompleted.selectedProperty().bindBidirectional(modelRef.appendPath("filterCompletedSelected").<Boolean>fxProperty());
+
+#### Changing the filter
+
+There is a clicked methods for each of the filters in the footer.
+In order to reload the task list with a different filter the `filter` property needs to be set.
+The obvious solution would be to set the property directly.
+Due to multi threading reasons this will not work though:
+
+    :::java
+    @FXML
+    public void filterAllClicked(ActionEvent actionEvent) {
+        // This will not work!
+        modelRef.appendPath("filter").setValue("all");
+    }
+
+Ankor provides a solution for this problem.
+The utility class `AnkorPatterns` has a static method `changeValueLater` that will set the value on the correct thread.
+
+    :::java
+    @FXML
+    public void filterAllClicked(ActionEvent actionEvent) {
+        AnkorPatterns.changeValueLater(modelRef.appendPath("filter"), "all");
+    }
+
+Do the same for `filterActiveClicked` and `filterCompletedClicked`,
+changing `filter` to `"active"` and `"completed"` respectively.
 
 #### Clear completed todos
 
@@ -65,4 +91,4 @@ And that's it. Now we have a basic todo app that is backed by an Ankor server.
 If you haven't done so already, check out the [server tutorial][1].
 There you will learn how to write an Ankor server that can be used with this app.
 
-[1]: /tutorials/server
+[1]: http://ankor.io/tutorials/server
