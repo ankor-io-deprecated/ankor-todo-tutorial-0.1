@@ -1,109 +1,74 @@
-### Reacting to Actions
+### Finishing the Server
 
-In this step we will deal with Actions that are sent from the client.
+#### Fixing a bug
 
-#### Actions
-
-Actions are a core concept of Ankor.
-An [`Action`][4] is generally used to make user interaction explicit.
-
-In this case we will deal with the `"newTask"` action.
-This `Action` is triggered when the users creates a new todo.
-It contains the title of the new task as a parameter.
-
-#### Before we start
-
-Let's set the initial state of our three view model properties based on the database:
+In the last step we introduced a bug.
+It happens only when the `filter` is set the `Filter.completed`.
+If we add a todo in this state the todo appears in the list even though it is not completed.
+The origin of this bug is in the `newTask` method.
+When we first wrote it we didn't have a filter.
+We can fix it with an additional if statement:
 
     :::java
-    itemsLeft = taskRepository.getActiveTasks().size();
-    itemsLeftText = itemsLeftText(itemsLeft);
-    footerVisibility = taskRepository.getTasks().size() != 0;
-
-The `itemsLeftText` helper method is simply:
-
-    :::java
-    private String itemsLeftText(int itemsLeft) {
-        return (itemsLeft == 1) ? "item left" : "items left";
+    if (!filter.equals(Filter.completed)) {
+        TaskModel model = new TaskModel(task);
+        tasksRef().add(model);
     }
 
-#### Adding an ActionListener
+#### Advanced pattern syntax
 
-##### Client: Firing Actions
+##### Wildcards
 
-You can skip this section
-For reference, the code for firing an Action in the JavaFX client looks like this:
+There are still change listeners missing.
+At the moment nothing happens when we complete an individual todo.
+This should update the item counts and reload the list entries.
+(We reload the list because a completed todo should not remain in the active list and vice versa).
 
     :::java
-    Map<String, Object> params = new HashMap<>();
-    params.put("title", title);
-    modelRef.fire(new Action("newTask", params));
-
-It looks similar for other platforms.
-Anyway, what the server receives will look like this:
-
-    {
-        "senderId": "...",
-        "modelId": "...",
-        "messageId": "...",
-        "property": "root.model",
-        "action": {
-            "name": "newTask",
-            "params": {
-                "title": "test"
-            }
-        }
+    @ChangeListener(pattern = {
+            "root.model.tasks.*.completed"})
+    public void saveTask() {
+        updateItemsCount();
+        reloadTasks(filter);
     }
 
-An `Action` always has a name.
-Optionally it can have parameters.
-If so, each of the parameters mast have a name as well.
+Here we use `*` in the pattern to indicate that we do not care which task's `completed` property changes.
+The method should be called when any of them changes.
 
-##### Server: Reacting to Actions
+<div class="alert alert-info">
+    <strong>Note:</strong>
+    <code>"tasks.*.completed"</code> is equivalent to <code>"tasks[*].completed"</code>.
+    E.g. if you wanted to access the third element, you could either say <code>"tasks.3"</code> or <code>"tasks[3]"</code>.
+</div>
 
-Instead of adding event listeners ourselves we will use Ankor's support for annotations.
-We can turn a method into an action listener by annotating it with `@ActionListener`.
-However there are a few things to consider:
+##### Backrefs
 
-1. The name of the method must be the same as the name of the Action.
-2. If the Action has parameters, they will become call parameters and need to be annotated as well.
+Currently changes to todos are not persisted in the repository.
+A todo should be persisted when either it's `title` or `completed` property changes.
 
-Let's see how this looks for the `newTask` Action:
+We can change the previous pattern to include changes to the title as well.
+Unlike before we will also need a `Ref` to the todo that has changed.
+Otherwise we would not know which todo to persist.
+
+We can remember a property by putting it in parenthesis in the pattern.
+By doing so Ankor will expect a method that takes a `Ref` as parameters.
+When the method is called the `Ref` will point to the property specified in the pattern.
+
+In case of a list the we put parenthesis around the index to get a `Ref` to the entry at that index:
 
     :::java
-    @ActionListener
-    public void newTask(@Param("title") final String title) {
-        // ...
+    @ChangeListener(pattern = {
+            "root.model.tasks.(*).completed",
+            "root.model.tasks.(*).title"})
+    public void saveTask(Ref ref) {
+        Task model = ref.getValue();
+        taskRepository.saveTask(model);
+
+        updateItemsCount();
+        reloadTasks(filter);
     }
 
-Note the `@Param` annotation on the method parameter.
+This completes the Ankor server tutorial.
+You can now follow any of the [client tutorials][1] and let the client interact with this server.
 
-##### Implementing the newTask method
-
-In the body of the method we create a new task and add it to the task repository.
-
-    :::java
-    Task task = new Task(title);
-    taskRepository.saveTask(task);
-
-However, this alone will not trigger any change in the UI.
-We want to change the `itemsLeft` property to reflect the actual number of tasks in the repository.
-Simply setting the property will not trigger any events though.
-
-    :::java
-    int itemsLeft = taskRepository.getActiveTasks().size();
-
-    // Ankor will not notice this
-    this.itemsLeft = itemsLeft;
-
-Instead we set the new value via the `Ref` that points at the `itemsLeft` property.
-We can obtain this Ref by appending `"itemsLeft"` to our `modelRef`.
-
-    :::java
-    int itemsLeft = taskRepository.getActiveTasks().size();
-    modelRef.appendPath("itemsLeft").setValue(itemsLeft);
-
-This will send a change event to the client and trigger any events there.
-It will also update the local variable, so that `(this.itemsLeft == itemsLeft)` evaluates to `true`.
-
-[4]: #TODOLinkToDocumentationAction
+[1]: http://www.ankor.io/tutorials
