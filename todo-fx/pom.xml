@@ -6,7 +6,7 @@
 
     <parent>
         <groupId>io.ankor.tutorial</groupId>
-        <artifactId>todo-sample</artifactId>
+        <artifactId>ankor-todo-tutorial</artifactId>
         <version>0-SNAPSHOT</version>
     </parent>
 
