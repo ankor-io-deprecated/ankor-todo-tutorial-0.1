@@ -24,9 +24,9 @@
 
         <!-- we want to reuse some of the server code -->
         <dependency>
-            <groupId>io.ankor.tutorial</groupId>
-            <artifactId>todo-server</artifactId>
-            <version>${project.version}</version>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.0.7</version>
             <scope>compile</scope>
         </dependency>
 
@@ -34,6 +34,7 @@
             <groupId>javax.websocket</groupId>
             <artifactId>javax.websocket-api</artifactId>
             <version>1.0</version>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>
@@ -48,12 +49,14 @@
             <groupId>org.glassfish.tyrus</groupId>
             <artifactId>tyrus-client</artifactId>
             <version>1.2.1</version>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>org.glassfish.tyrus</groupId>
             <artifactId>tyrus-container-grizzly</artifactId>
             <version>1.2.1</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 
