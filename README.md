@@ -1,109 +1,92 @@
-### Reacting to Actions
+### Reloading the Todo List
 
-In this step we will deal with Actions that are sent from the client.
+In this step we want to update the todo list when the users selects one of the filters at the bottom.
 
-#### Actions
-
-Actions are a core concept of Ankor.
-An [`Action`][4] is generally used to make user interaction explicit.
-
-In this case we will deal with the `"newTask"` action.
-This `Action` is triggered when the users creates a new todo.
-It contains the title of the new task as a parameter.
-
-#### Before we start
-
-Let's set the initial state of our three view model properties based on the database:
+We add a [`Filter`][1] as a property in `TaskListModel` and initialize it with `Filter.all`.
+We also add a boolean property for the active state of each of the filter buttons:
 
     :::java
-    itemsLeft = taskRepository.getActiveTasks().size();
-    itemsLeftText = itemsLeftText(itemsLeft);
-    footerVisibility = taskRepository.getTasks().size() != 0;
+    private Filter filter = Filter.all;
+    private Boolean filterAllSelected = true;
+    private Boolean filterActiveSelected = false;
+    private Boolean filterCompletedSelected = false;
 
-The `itemsLeftText` helper method is simply:
+<div class="alert alert-info">
+    <strong>Note:</strong>
+    Don't forget to create getters and setters for these properties.
+</div>
+
+
+Next we add another change listener for the `filter` property.
+This method will update the active state of the buttons at the bottom.
+It will also reload the tasks based on the current filter.
+We still have to implement this method though.
 
     :::java
-    private String itemsLeftText(int itemsLeft) {
-        return (itemsLeft == 1) ? "item left" : "items left";
+    @ChangeListener(pattern = "root.model.filter")
+    public void updateFilterSelected() {
+        modelRef.appendPath("filterAllSelected").setValue(filter.equals(Filter.all));
+        modelRef.appendPath("filterActiveSelected").setValue(filter.equals(Filter.active));
+        modelRef.appendPath("filterCompletedSelected").setValue(filter.equals(Filter.completed));
+        reloadTasks(filter);
     }
 
-#### Adding an ActionListener
-
-##### Client: Firing Actions
-
-You can skip this section
-For reference, the code for firing an Action in the JavaFX client looks like this:
+`reloadTasks` fetches the list of tasks that should be visible to the user based on the `filter`.
+It than transforms the `Task`s into `TaskModel`s and
+sets those tasks as the value of our task `Ref`.
 
     :::java
-    Map<String, Object> params = new HashMap<>();
-    params.put("title", title);
-    modelRef.fire(new Action("newTask", params));
+    private void reloadTasks(Filter filter) {
+        List<Task> tasks = taskRepository.fetchTasks(filter);
+        List<TaskModel> taskModels = mapTasksToTaskModels(tasks);
+        tasksRef().setValue(taskModels);
+    }
 
-It looks similar for other platforms.
-Anyway, what the server receives will look like this:
+`mapTasksToTaskModels` will loop through the task list and wrap each `Task` in a `TaskModel`:
 
-    {
-        "senderId": "...",
-        "modelId": "...",
-        "messageId": "...",
-        "property": "root.model",
-        "action": {
-            "name": "newTask",
-            "params": {
-                "title": "test"
-            }
+    :::java
+    private List<TaskModel> mapTasksToTaskModels(List<Task> tasks) {
+        List<TaskModel> res = new ArrayList<>(tasks.size());
+        for (Task t : tasks) {
+            res.add(new TaskModel(t));
         }
+        return res;
     }
 
-An `Action` always has a name.
-Optionally it can have parameters.
-If so, each of the parameters mast have a name as well.
+Now we can click the filter in the UI and the list updates.
 
-##### Server: Reacting to Actions
+#### Implementing the remaining actions
 
-Instead of adding event listeners ourselves we will use Ankor's support for annotations.
-We can turn a method into an action listener by annotating it with `@ActionListener`.
-However there are a few things to consider:
+With the `reloadTasks` method we can also implement the remaining two action listeners.
 
-1. The name of the method must be the same as the name of the Action.
-2. If the Action has parameters, they will become call parameters and need to be annotated as well.
+##### Clear tasks
 
-Let's see how this looks for the `newTask` Action:
+The functionality for this is already implemented in the repository.
+We just have to update the UI state to reflect the changes.
+We do so by calling our two helper methods:
 
     :::java
     @ActionListener
-    public void newTask(@Param("title") final String title) {
-        // ...
+    public void clearTasks() {
+        taskRepository.clearTasks();
+        updateItemsCount();
+        reloadTasks(filter);
     }
 
-Note the `@Param` annotation on the method parameter.
+##### Toggle all tasks
 
-##### Implementing the newTask method
+The other action is changes the `completed` property of all todos to `true` if at least one todo isn't completed.
+Otherwise it sets all tasks' completed property to `false`.
 
-In the body of the method we create a new task and add it to the task repository.
-
-    :::java
-    Task task = new Task(title);
-    taskRepository.saveTask(task);
-
-However, this alone will not trigger any change in the UI.
-We want to change the `itemsLeft` property to reflect the actual number of tasks in the repository.
-Simply setting the property will not trigger any events though.
+The method gets invoked with the desired state of all todos.
+Again we just update the item count and reload the task list.
 
     :::java
-    int itemsLeft = taskRepository.getActiveTasks().size();
+    @ActionListener
+    public void toggleAll(@Param("toggleAll") final boolean toggleAll) {
+        taskRepository.toggleAll(toggleAll);
+        updateItemsCount();
+        reloadTasks(filter);
+    }
 
-    // Ankor will not notice this
-    this.itemsLeft = itemsLeft;
-
-Instead we set the new value via the `Ref` that points at the `itemsLeft` property.
-We can obtain this Ref by appending `"itemsLeft"` to our `modelRef`.
-
-    :::java
-    int itemsLeft = taskRepository.getActiveTasks().size();
-    modelRef.appendPath("itemsLeft").setValue(itemsLeft);
-
-This will send a change event to the client and trigger any events there.
-It will also update the local variable, so that `(this.itemsLeft == itemsLeft)` evaluates to `true`.
-
-[4]: #TODOLinkToDocumentationAction
+[1]: #linktofilter
