@@ -98,4 +98,4 @@ It will also update the local variable, so that `(this.itemsLeft == itemsLeft)` 
 
 Now you can add todos to the list an see how the number changes.
 
-[4]: #TODOLinkToDocumentationAction
+[4]: http://ankor.io/static/javadoc/apidocs/at/irian/ankor/action/Action.html
