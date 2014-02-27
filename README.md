@@ -1,4 +1,4 @@
-### Sharing properties
+### Sharing Properties
 
 #### Creating another view model
 
@@ -10,10 +10,10 @@ We do so by calling `initViewModel` inside the constructor.
     public class TaskListModel {
 
         @AnkorIgnore
-        private final TaskRepository taskRepository;
+        private final Ref modelRef;
 
         @AnkorIgnore
-        private final Ref modelRef;
+        private final TaskRepository taskRepository;
 
         public TaskListModel(Ref modelRef, TaskRepository taskRepository) {
             AnkorPatterns.initViewModel(this, modelRef);
@@ -34,8 +34,8 @@ As goes for the `modelRef` that we will use internally.
 Let's add some actual view model properties that Ankor should share with clients:
 
     :::java
-    private Boolean footerVisibility;
-    private Integer itemsLeft;
+    private Boolean footerVisibility = false;
+    private Integer itemsLeft = 0;
     private String itemsLeftText;
 
     public Boolean getFooterVisibility() {
