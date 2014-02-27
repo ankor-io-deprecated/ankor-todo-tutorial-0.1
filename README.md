@@ -2,13 +2,15 @@
 
 In this step we want to display todos in the UI.
 
-#### Top Level
+#### tasksList
 
-First of all we need a reference to the UI list, which is actually a [`VBox`][1].
+First of all we need a reference to the UI component `tasksList`, which is a [`VBox`][1].
 
     :::java
     @FXML
     public VBox tasksList;
+
+![fx-step-5-1](http://ankor.io/static/images/tutorial/fx-step-5-1.png)
 
 In order to add todos to the list we need to add a change listener.
 We want to render the list whenever the list of todos changes:
@@ -16,7 +18,7 @@ We want to render the list whenever the list of todos changes:
     :::java
     @ChangeListener(pattern = "root.model.(tasks)")
     public void renderTasks(FxRef tasksRef) {
-        // TODO
+        // ...
     }
 
 We use special syntax here, denoting that we are expecting a reference to the tasks as call parameter.
@@ -45,15 +47,15 @@ It's basically the same as `get` for a list, but it returns another `Ref` instea
 
 Before you go on, you might want to add this line to your init method (not the constructor):
 
+    :::java
     renderTasks(modelRef.appendPath("tasks"));
 
 This way todos that are already in the list when the application starts will be rendered.
 
-#### Defining a Custom JavaFX Component
+#### Defining a custom JavaFX component
 
 The `TaskPane` is a single todo entry in the list. The markup is already defined in a separate file [`task.fxml`][2].
-
-Open `TaskPane.java`. We will need the following properties:
+Open `TaskPane.java` and add the following properties:
 
     :::java
     private FxRef itemRef;
@@ -66,27 +68,32 @@ Open `TaskPane.java`. We will need the following properties:
     @FXML
     public Button deleteButton;
 
+![fx-step-5-2](http://ankor.io/static/images/tutorial/fx-step-5-2.png)
+
 The constructor is structured like this:
 
+    :::java
     public TaskPane(FxRef itemRef, int index) {
         this.itemRef = itemRef;
         this.index = index;
 
         loadFXML();
         addEventListeners();
-        setValues();
         bindProperties();
     }
 
-We need to implement these four methods:
+Obviously we need to implement these three methods:
 
 * `loadFXML`: Load the markup that defines the component.
 * `addEventListeners`: Leave this unimplemented for now.
-* `setValues`: Set the initial values from the `itemRef`.
 * `bindProperties`: Enable two-way bindings.
 
 ##### loadFXML
 
+Similar to the `TaskListController` the structure of the `TaskPane` is defined in markup.
+The `loadFXML` method loads the markup from the resource folder and sets our `TaskPane` class as its controller.
+
+    :::java
     private void loadFXML() {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("task.fxml"));
         fxmlLoader.setRoot(this);
@@ -98,16 +105,9 @@ We need to implement these four methods:
         }
     }
 
-##### setValues
-
-    private void setValues() {
-        titleTextField.textProperty().setValue(itemRef.appendPath("title").<String>getValue());
-        completedButton.selectedProperty().setValue(itemRef.appendPath("completed").<Boolean>getValue());
-        titleTextField.editableProperty().setValue(itemRef.appendPath("editable").<Boolean>getValue());
-    }
-
 ##### bindProperties
 
+    :::java
     private void bindProperties() {
         titleTextField.textProperty().bindBidirectional(itemRef.appendPath("title").<String>fxProperty());
         completedButton.selectedProperty().bindBidirectional(itemRef.appendPath("completed").<Boolean>fxProperty());
