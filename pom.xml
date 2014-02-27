@@ -12,6 +12,7 @@
     <modules>
         <module>todo-fx</module>
         <module>todo-server</module>
+        <module>todo-servlet</module>
     </modules>
 
     <properties>
