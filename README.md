@@ -113,6 +113,6 @@ since nothing will change until we add some todos to the list.
 
 [1]: https://github.com/ankor-io/ankor-todo/blob/fx-step-3/todo-javafx-client/src/main/java/io/ankor/tutorial/TaskListController.java
 [2]: https://github.com/ankor-io/ankor-todo/blob/fx-step-3/todo-javafx-client/src/main/resources/tasks.fxml
-[3]: #TODOlinktoDocs
+[3]: http://ankor.io/static/javadoc/apidocs/at/irian/ankor/fx/binding/fxref/FxRef.html
 [4]: http://docs.oracle.com/javafx/2/api/javafx/beans/property/Property.html
 [5]: http://docs.oracle.com/javafx/2/api/javafx/fxml/FXML.html
