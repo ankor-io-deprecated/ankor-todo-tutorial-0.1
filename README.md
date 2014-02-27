@@ -9,7 +9,7 @@ your choice here. However, choose the first option if you want to start quickly.
 
 The fastest way to create a Ankor JavaFX app is to extend the `AnkorApplication` class. This
 
-Open [`App.java`][1] and add the following lines:
+Open `App.java` and add the following lines:
 
     :::java
     public class App extends AnkorApplication {
@@ -84,5 +84,4 @@ A running Ankor server should send an UUID when a connection is established.
 
 If the server appears to be offline you can still [write your own server][2].
 
-[1]: https://github.com/ankor-io/ankor-todo/blob/fx-step-1/todo-javafx-client/src/main/java/io/ankor/tutorial/App.java
 [2]: http://ankor.io/tutorials/server/0
