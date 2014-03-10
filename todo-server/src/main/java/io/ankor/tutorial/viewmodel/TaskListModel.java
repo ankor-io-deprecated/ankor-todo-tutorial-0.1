@@ -47,7 +47,6 @@ public class TaskListModel {
         Task task = new Task(title);
         taskRepository.saveTask(task);
 
-        int itemsLeft = taskRepository.fetchActiveTasks().size();
         updateItemsCount();
 
         TaskModel model = new TaskModel(task);
@@ -63,7 +62,6 @@ public class TaskListModel {
         Task task = tasks.get(index);
         taskRepository.deleteTask(task);
 
-        int itemsLeft = taskRepository.fetchActiveTasks().size();
         updateItemsCount();
 
         tasksRef().delete(index);
