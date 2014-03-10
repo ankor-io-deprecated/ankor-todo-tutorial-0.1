@@ -53,7 +53,6 @@ public class TaskListModel {
         Task task = new Task(title);
         taskRepository.saveTask(task);
 
-        int itemsLeft = taskRepository.fetchActiveTasks().size();
         updateItemsCount();
 
         if (!filter.equals(Filter.completed)) {
@@ -71,7 +70,6 @@ public class TaskListModel {
         Task task = tasks.get(index);
         taskRepository.deleteTask(task);
 
-        int itemsLeft = taskRepository.fetchActiveTasks().size();
         updateItemsCount();
 
         tasksRef().delete(index);
